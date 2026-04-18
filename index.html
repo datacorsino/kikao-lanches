@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kikão Lanches — Porecatu/PR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --yellow: #F5B915;
+      --dark:   #1A1A1A;
+      --gelo:   #F2EDE4;
+      --white:  #FFFFFF;
+      --border: #E4DDD4;
+      --muted:  #9A9088;
+      --ease:   cubic-bezier(.4,0,.2,1);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: 'Open Sans', sans-serif; background: var(--dark); color: var(--dark); }
+    h1,h2,h3,h4 { font-family: 'Oswald', sans-serif; }
+
+    /* ── SCREENS ──────────────────────────── */
+    .screen {
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      transform: translateX(100%);
+      transition: transform .4s var(--ease);
+      background: var(--gelo);
+      z-index: 10;
+    }
+    #screen-home { transform: translateX(0); }
+
+    /* ── HOME ─────────────────────────────── */
+    #screen-home {
+      background: url('image/banner/banner.png') center/cover no-repeat;
+      justify-content: flex-end;
+    }
+    .home-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(20,18,16,.97) 40%, rgba(20,18,16,.55) 70%, rgba(20,18,16,.15));
+    }
+    .home-content {
+      position: relative; z-index: 2;
+      padding: 0 2rem 4rem;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+    }
+    .home-logo {
+      width: 100px; height: 100px; border-radius: 50%;
+      object-fit: cover; border: 2px solid rgba(245,185,21,.6);
+      margin-bottom: 1.5rem;
+    }
+    .home-title {
+      font-size: clamp(1.9rem, 5.5vw, 3rem); color: var(--white);
+      text-transform: uppercase; line-height: 1; margin-bottom: .5rem; letter-spacing: .02em;
+    }
+    .home-title span { color: var(--yellow); }
+    .home-sub {
+      color: rgba(255,255,255,.45); font-size: .82rem; margin-bottom: 3rem;
+      letter-spacing: .12em; text-transform: uppercase;
+    }
+    .home-btns { display: flex; flex-direction: column; gap: .8rem; width: 100%; max-width: 320px; }
+    .btn-pedido {
+      background: var(--yellow); color: var(--dark); border: none;
+      border-radius: 4px; padding: 1rem;
+      font-family: 'Oswald', sans-serif; font-size: 1rem; font-weight: 700;
+      text-transform: uppercase; cursor: pointer; letter-spacing: .1em;
+      transition: background .18s;
+    }
+    .btn-pedido:hover { background: #e0a800; }
+    .btn-sobre {
+      background: transparent; color: rgba(255,255,255,.7);
+      border: 1px solid rgba(255,255,255,.2); border-radius: 4px; padding: .9rem;
+      font-family: 'Oswald', sans-serif; font-size: .95rem; font-weight: 400;
+      text-transform: uppercase; cursor: pointer; letter-spacing: .1em;
+      transition: border-color .18s, color .18s;
+    }
+    .btn-sobre:hover { border-color: rgba(255,255,255,.5); color: white; }
+
+    /* ── HEADER COMUM ─────────────────────── */
+    .s-header {
+      flex-shrink: 0; background: var(--dark); color: white;
+      padding: 0 1.4rem; height: 56px;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .btn-back {
+      background: none; border: none; color: rgba(255,255,255,.45);
+      font-size: 1.3rem; cursor: pointer; padding: .2rem; line-height: 1;
+      transition: color .18s; flex-shrink: 0;
+    }
+    .btn-back:hover { color: var(--yellow); }
+    .s-title {
+      flex: 1; font-family: 'Oswald', sans-serif; font-size: .9rem;
+      text-transform: uppercase; letter-spacing: .12em; text-align: center;
+      color: rgba(255,255,255,.7);
+    }
+    .s-logo { height: 36px; border-radius: 4px; flex-shrink: 0; opacity: .85; }
+
+    /* ── STEPS BAR ────────────────────────── */
+    .steps-bar {
+      flex-shrink: 0; background: var(--dark);
+      padding: .55rem 1.4rem .65rem;
+      display: flex; align-items: center; gap: .6rem;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    /* dots */
+    .sd {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+      transition: background .3s, transform .3s;
+    }
+    .sd.done   { background: var(--yellow); }
+    .sd.active { background: var(--yellow); transform: scale(1.3); }
+    .sd.todo   { background: rgba(255,255,255,.18); }
+    /* lines between dots */
+    .sl { flex: 1; height: 1px; background: rgba(255,255,255,.12); }
+    .step-lbl {
+      font-family: 'Oswald', sans-serif; font-size: .72rem;
+      color: rgba(255,255,255,.35); white-space: nowrap; letter-spacing: .08em;
+      margin-left: .4rem;
+    }
+
+    /* ── BODY / FOOTER ────────────────────── */
+    .s-body { flex: 1; overflow-y: auto; padding: 1.6rem; }
+    .s-body::-webkit-scrollbar { width: 2px; }
+    .s-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 1px; }
+    .s-footer {
+      flex-shrink: 0; padding: 1rem 1.4rem;
+      background: var(--white); border-top: 1px solid var(--border);
+    }
+
+    /* ── SOBRE ────────────────────────────── */
+    .sobre-hero {
+      flex-shrink: 0; height: 34vh; min-height: 200px;
+      background: url('image/banner/banner.png') center/cover no-repeat; position: relative;
+    }
+    .sobre-hero-ov {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(26,26,26,.5), transparent);
+    }
+    .sobre-section { padding: 1.6rem; }
+    .sobre-section + .sobre-section { padding-top: 0; }
+    .sec-title {
+      font-family: 'Oswald', sans-serif; font-size: 1rem; text-transform: uppercase;
+      letter-spacing: .12em; color: var(--muted); margin-bottom: 1rem;
+    }
+    .sobre-section p { color: #666; line-height: 1.75; font-size: .9rem; margin-bottom: .7rem; }
+    .sobre-stats { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; margin-bottom: 1.2rem; }
+    .s-stat {
+      background: var(--dark); border-radius: 6px; padding: 1.2rem; text-align: center;
+    }
+    .s-stat .n { font-family: 'Oswald', sans-serif; font-size: 2rem; color: var(--yellow); line-height: 1; }
+    .s-stat p  { font-size: .75rem; color: rgba(255,255,255,.5); margin-top: .3rem; letter-spacing: .06em; text-transform: uppercase; }
+    .sobre-gallery { display: grid; grid-template-columns: repeat(3,1fr); gap: .4rem; margin: .8rem 0 1.2rem; }
+    .sobre-gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 4px; }
+    .sobre-mapa { border-radius: 6px; overflow: hidden; border: 1px solid var(--border); margin: .8rem 0; }
+    .sobre-mapa iframe { display: block; width: 100%; height: 200px; border: none; }
+    .sobre-info { font-size: .82rem; color: var(--muted); text-align: center; padding: .6rem 0 1.2rem; letter-spacing: .06em; }
+    .btn-full {
+      width: 100%; background: var(--yellow); color: var(--dark); border: none;
+      border-radius: 4px; padding: 1rem;
+      font-family: 'Oswald', sans-serif; font-size: .95rem; font-weight: 700;
+      text-transform: uppercase; cursor: pointer; letter-spacing: .1em;
+      transition: background .18s;
+    }
+    .btn-full:hover { background: #e0a800; }
+
+    /* ── TIPO ─────────────────────────────── */
+    .tipo-intro {
+      text-align: center; margin-bottom: 2rem;
+      font-size: .8rem; text-transform: uppercase;
+      letter-spacing: .14em; color: var(--muted);
+    }
+    .tipo-intro strong {
+      display: block; font-family: 'Oswald', sans-serif;
+      font-size: 1.5rem; color: var(--dark); margin-bottom: .3rem; letter-spacing: .04em;
+    }
+    .tipo-cards { display: flex; flex-direction: column; gap: .8rem; max-width: 380px; margin: 0 auto; }
+    .tipo-card {
+      background: var(--white); border-radius: 6px;
+      border: 1px solid var(--border);
+      padding: 1.4rem 1.2rem;
+      display: flex; align-items: center; gap: 1rem;
+      cursor: pointer; transition: border-color .18s;
+    }
+    .tipo-card:hover { border-color: var(--yellow); }
+    .tipo-card.selected { border-color: var(--yellow); border-width: 2px; }
+    .tc-icon { font-size: 1.8rem; opacity: .8; }
+    .tc-text h4 {
+      font-family: 'Oswald', sans-serif; font-size: 1.05rem;
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+    .tc-text p  { font-size: .78rem; color: var(--muted); margin-top: .15rem; }
+    .tc-radio {
+      margin-left: auto; width: 24px; height: 24px; border-radius: 50%;
+      border: 2px solid var(--border); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .78rem; font-weight: 700; transition: all .2s;
+    }
+    .tipo-card.selected .tc-radio {
+      background: var(--yellow); border-color: var(--yellow);
+      color: var(--dark);
+    }
+
+    .btn-avancar {
+      width: 100%; background: var(--yellow); color: var(--dark); border: none;
+      border-radius: 4px; padding: .9rem;
+      font-family: 'Oswald', sans-serif; font-size: .95rem; font-weight: 700;
+      text-transform: uppercase; cursor: pointer; letter-spacing: .1em;
+      transition: background .18s;
+    }
+    .btn-avancar:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+    .btn-avancar:not(:disabled):hover { background: #e0a800; }
+
+    /* ── CARDÁPIO ─────────────────────────── */
+    .cat-tabs {
+      flex-shrink: 0; display: flex; gap: .4rem; overflow-x: auto;
+      padding: .9rem 1.4rem .6rem; background: var(--gelo);
+      border-bottom: 1px solid var(--border); scrollbar-width: none;
+    }
+    .cat-tabs::-webkit-scrollbar { display: none; }
+    .cat-tab {
+      flex-shrink: 0; background: transparent; border: 1px solid var(--border);
+      border-radius: 3px; padding: .32rem .9rem;
+      font-family: 'Oswald', sans-serif; font-size: .78rem; text-transform: uppercase;
+      letter-spacing: .08em; cursor: pointer; color: var(--muted); transition: all .16s;
+    }
+    .cat-tab.on { background: var(--dark); color: var(--yellow); border-color: var(--dark); }
+    .cat-tab:hover:not(.on) { border-color: var(--dark); color: var(--dark); }
+
+    #screen-cardapio .s-body { padding: .2rem .9rem .9rem; }
+    #screen-cardapio { background: var(--gelo); }
+
+    .cat-label {
+      font-family: 'Oswald', sans-serif; font-size: .72rem; text-transform: uppercase;
+      letter-spacing: .14em; color: var(--muted);
+      padding: 1.1rem 0 .5rem; display: flex; align-items: center; gap: .7rem;
+    }
+    .cat-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .menu-item {
+      background: var(--white); border-radius: 6px; margin-bottom: .5rem;
+      border: 1px solid var(--border); overflow: hidden;
+    }
+    .mi-row { display: flex; align-items: center; gap: .9rem; padding: .9rem; }
+    .mi-img { width: 64px; height: 64px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
+    .mi-info { flex: 1; min-width: 0; }
+    .mi-info h4 {
+      font-family: 'Oswald', sans-serif; font-size: .93rem;
+      text-transform: uppercase; letter-spacing: .04em;
+    }
+    .mi-info p {
+      font-size: .73rem; color: var(--muted); line-height: 1.4; margin-top: .1rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .mi-qty { display: flex; align-items: center; gap: .5rem; flex-shrink: 0; }
+    .qb {
+      width: 26px; height: 26px; border-radius: 50%; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .95rem; font-weight: 700; transition: background .14s;
+    }
+    .qb.minus { background: var(--gelo); color: var(--muted); }
+    .qb.minus:hover { background: var(--border); }
+    .qb.plus  { background: var(--yellow); color: var(--dark); }
+    .qb.plus:hover  { background: #e0a800; }
+    .qn { font-family: 'Oswald', sans-serif; font-size: .97rem; min-width: 18px; text-align: center; }
+
+    .mi-obs-wrap { display: none; border-top: 1px solid var(--gelo); padding: .45rem .9rem .6rem; }
+    .mi-obs-wrap.show { display: block; }
+    .mi-obs {
+      width: 100%; border: none; border-bottom: 1px solid var(--border);
+      padding: .3rem 0; font-size: .78rem; font-family: 'Open Sans', sans-serif;
+      background: transparent; outline: none; color: #555;
+      transition: border-color .18s;
+    }
+    .mi-obs:focus { border-color: var(--yellow); }
+    .mi-obs::placeholder { color: #ccc; }
+
+    .beb-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: .5rem; margin-bottom: .8rem; }
+    .beb-card {
+      background: var(--white); border-radius: 5px; padding: .8rem .4rem;
+      text-align: center; border: 1px solid var(--border); transition: border-color .16s;
+    }
+    .beb-card:hover { border-color: var(--yellow); }
+    .beb-icon { font-size: 1.5rem; opacity: .8; }
+    .beb-card h4 {
+      font-size: .72rem; font-family: 'Oswald', sans-serif;
+      text-transform: uppercase; letter-spacing: .06em;
+      margin: .25rem 0 .45rem; color: var(--dark);
+    }
+    .beb-qty { display: flex; align-items: center; justify-content: center; gap: .3rem; }
+    .beb-qty .qb { width: 22px; height: 22px; font-size: .85rem; }
+    .beb-qty .qn { font-size: .85rem; }
+
+    .cart-bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .cb-label {
+      font-family: 'Oswald', sans-serif; font-size: .82rem;
+      text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
+    }
+    .cb-label span { color: var(--dark); font-size: 1.1rem; }
+    .cart-bar .btn-avancar { width: auto; padding: .75rem 1.8rem; }
+
+    /* ── DADOS ────────────────────────────── */
+    /* confirmação de tipo no step 3 */
+    .tipo-confirm {
+      display: flex; align-items: center; gap: 1rem;
+      background: var(--white); border: 1px solid var(--border);
+      border-left: 3px solid var(--yellow);
+      border-radius: 6px; padding: 1rem 1.2rem;
+      margin-bottom: 1.4rem;
+    }
+    .tipo-confirm .tc-text h4 { font-size: 1rem; }
+    .tipo-confirm .tc-text p  { font-size: .75rem; }
+    .tipo-confirm .tc-radio {
+      background: var(--yellow); border-color: var(--yellow); color: var(--dark);
+    }
+    .resumo-box {
+      background: var(--dark); border-radius: 6px;
+      padding: 1.2rem; margin-bottom: 1.6rem;
+    }
+    .resumo-box h4 {
+      font-family: 'Oswald', sans-serif; font-size: .72rem; text-transform: uppercase;
+      letter-spacing: .14em; color: var(--yellow); margin-bottom: .9rem;
+    }
+    .ri { display: flex; justify-content: space-between; padding: .3rem 0; border-bottom: 1px solid rgba(255,255,255,.05); }
+    .ri span { font-size: .86rem; color: rgba(255,255,255,.75); }
+    .ri .rq  { color: var(--yellow); font-family: 'Oswald', sans-serif; }
+    .ri-obs  { font-size: .73rem; color: rgba(255,255,255,.35); padding: .1rem 0 .3rem .5rem; }
+
+    .form-blk { margin-bottom: 1.6rem; }
+    .form-blk h4 {
+      font-family: 'Oswald', sans-serif; font-size: .72rem; text-transform: uppercase;
+      letter-spacing: .14em; color: var(--muted); margin-bottom: 1rem;
+    }
+    .f-input {
+      display: block; width: 100%; background: var(--white);
+      border: none; border-bottom: 1px solid var(--border);
+      border-radius: 0;
+      padding: .7rem 0; font-family: 'Open Sans', sans-serif; font-size: .93rem;
+      color: var(--dark); outline: none; margin-bottom: .1rem;
+      transition: border-color .18s;
+    }
+    .f-input:focus { border-color: var(--yellow); }
+    .f-input::placeholder { color: #ccc; }
+    .f-input + .f-input { border-top: none; }
+
+    .btn-whats-pedido {
+      width: 100%; background: #25D366; color: white; border: none;
+      border-radius: 4px; padding: 1rem;
+      font-family: 'Oswald', sans-serif; font-size: .95rem; font-weight: 700;
+      text-transform: uppercase; cursor: pointer; letter-spacing: .1em;
+      display: flex; align-items: center; justify-content: center; gap: .6rem;
+      transition: background .18s;
+    }
+    .btn-whats-pedido:hover { background: #1ebe5a; }
+
+    /* ── TOAST ────────────────────────────── */
+    .toast {
+      position: fixed; bottom: 1.5rem; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--dark); color: var(--yellow);
+      padding: .7rem 1.6rem; border-radius: 3px;
+      font-family: 'Oswald', sans-serif; font-size: .85rem; letter-spacing: .06em;
+      z-index: 9999; pointer-events: none; white-space: nowrap;
+      transition: transform .28s var(--ease);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── RESPONSIVE ───────────────────────── */
+    @media (min-width: 580px) {
+      .s-body { max-width: 520px; margin: 0 auto; width: 100%; }
+      #screen-cardapio .s-body { max-width: none; }
+      .beb-grid { grid-template-columns: repeat(4,1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ HOME ══════════════════════════════════ -->
+<div id="screen-home" class="screen">
+  <div class="home-overlay"></div>
+  <div class="home-content">
+    <img src="image/logo/kikao.jpg" alt="Kikão Lanches" class="home-logo">
+    <h1 class="home-title">Kikão <span>Lanches</span></h1>
+    <p class="home-sub">O melhor hambúrguer artesanal de Porecatu/PR</p>
+    <div class="home-btns">
+      <button class="btn-pedido" onclick="goTo('tipo')">🛒 Fazer Pedido</button>
+      <button class="btn-sobre"  onclick="goTo('sobre')">🏪 Conheça a Loja</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SOBRE ══════════════════════════════════ -->
+<div id="screen-sobre" class="screen">
+  <div class="s-header">
+    <button class="btn-back" onclick="goBack()">&#8592;</button>
+    <span class="s-title">Sobre a Kikão</span>
+    <img src="image/logo/kikao.jpg" alt="" class="s-logo">
+  </div>
+  <div class="s-body" style="padding:0">
+    <div class="sobre-hero"><div class="sobre-hero-ov"></div></div>
+    <div class="sobre-section">
+      <h3 class="sec-title">Nossa História</h3>
+      <p>Nascido no coração de Porecatu, o Kikão Lanches é a lanchonete que a cidade adotou como sua. Aqui a gente não faz hambúrguer — a gente faz memória afetiva.</p>
+      <p>Ingredientes selecionados, pão fresquinho e aquele atendimento de interior que você não encontra em lugar nenhum.</p>
+      <div class="sobre-stats">
+        <div class="s-stat"><div class="n">10+</div><p>Sabores no cardápio</p></div>
+        <div class="s-stat"><div class="n">100%</div><p>Artesanal</p></div>
+      </div>
+    </div>
+    <div class="sobre-section" style="padding-top:0">
+      <h3 class="sec-title">Galeria</h3>
+      <div class="sobre-gallery">
+        <img src="image/pratos_bebidas/1.png" alt="Lanche" loading="lazy">
+        <img src="image/pratos_bebidas/2.png" alt="Lanche" loading="lazy">
+        <img src="image/pratos_bebidas/6.png" alt="Lanche" loading="lazy">
+        <img src="image/pratos_bebidas/7_bruto.png" alt="Lanche" loading="lazy">
+        <img src="image/pratos_bebidas/3.png" alt="Porção" loading="lazy">
+        <img src="image/pratos_bebidas/sucos.png" alt="Bebida" loading="lazy">
+      </div>
+      <h3 class="sec-title">Onde Estamos</h3>
+      <div class="sobre-mapa">
+        <iframe src="https://maps.google.com/maps?q=Kik%C3%A3o+Lanches+Porecatu+PR&output=embed&z=17"
+          allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+          title="Localização Kikão Lanches"></iframe>
+      </div>
+      <p class="sobre-info">📍 Porecatu / PR &nbsp;·&nbsp; 📲 (43) 99862-4185</p>
+      <button class="btn-full" onclick="goTo('tipo')">🛒 Fazer Meu Pedido</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STEP 1 — TIPO ══════════════════════════ -->
+<div id="screen-tipo" class="screen">
+  <div class="s-header">
+    <button class="btn-back" onclick="goBack()">&#8592;</button>
+    <span class="s-title">Novo Pedido</span>
+    <img src="image/logo/kikao.jpg" alt="" class="s-logo">
+  </div>
+  <div class="steps-bar">
+    <div class="sd active"></div><div class="sl"></div>
+    <div class="sd todo"></div><div class="sl"></div>
+    <div class="sd todo"></div>
+    <span class="step-lbl">1 de 3</span>
+  </div>
+  <div class="s-body">
+    <p class="tipo-intro"><strong>Como quer receber?</strong>Selecione uma opção abaixo</p>
+    <div class="tipo-cards">
+      <div class="tipo-card" id="tc-local" onclick="escolherTipo('local')">
+        <span class="tc-icon">🏠</span>
+        <div class="tc-text">
+          <h4>Retirar no Local</h4>
+          <p>Venha buscar na lanchonete</p>
+        </div>
+        <div class="tc-radio" id="tr-local"></div>
+      </div>
+      <div class="tipo-card" id="tc-entrega" onclick="escolherTipo('entrega')">
+        <span class="tc-icon">🛵</span>
+        <div class="tc-text">
+          <h4>Delivery</h4>
+          <p>Receba em casa em Porecatu/PR</p>
+        </div>
+        <div class="tc-radio" id="tr-entrega"></div>
+      </div>
+    </div>
+  </div>
+  <div class="s-footer">
+    <button class="btn-avancar" id="btn-av-tipo" disabled onclick="avancarTipo()">Avançar →</button>
+  </div>
+</div>
+
+<!-- ══ STEP 2 — CARDÁPIO ══════════════════════ -->
+<div id="screen-cardapio" class="screen">
+  <div class="s-header">
+    <button class="btn-back" onclick="goBack()">&#8592;</button>
+    <span class="s-title">Escolha seus Itens</span>
+    <img src="image/logo/kikao.jpg" alt="" class="s-logo">
+  </div>
+  <div class="steps-bar">
+    <div class="sd done"></div><div class="sl"></div>
+    <div class="sd active"></div><div class="sl"></div>
+    <div class="sd todo"></div>
+    <span class="step-lbl">2 de 3</span>
+  </div>
+  <div class="cat-tabs" id="catTabs">
+    <button class="cat-tab on" onclick="irCat('classica',this)">🔥 Clássica</button>
+    <button class="cat-tab"    onclick="irCat('xraiz',this)">🐄 X-Raiz</button>
+    <button class="cat-tab"    onclick="irCat('acomp',this)">🍟 Acomp.</button>
+    <button class="cat-tab"    onclick="irCat('bebidas',this)">🥤 Bebidas</button>
+  </div>
+  <div class="s-body" id="menuBody"></div>
+  <div class="s-footer">
+    <div class="cart-bar">
+      <div class="cb-label"><span id="cartTotal">0</span> item(s)</div>
+      <button class="btn-avancar" id="btn-av-card" disabled onclick="avancarCardapio()">Avançar →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ STEP 3 — DADOS ═════════════════════════ -->
+<div id="screen-dados" class="screen">
+  <div class="s-header">
+    <button class="btn-back" onclick="goBack()">&#8592;</button>
+    <span class="s-title">Finalizar Pedido</span>
+    <img src="image/logo/kikao.jpg" alt="" class="s-logo">
+  </div>
+  <div class="steps-bar">
+    <div class="sd done"></div><div class="sl"></div>
+    <div class="sd done"></div><div class="sl"></div>
+    <div class="sd active"></div>
+    <span class="step-lbl">3 de 3</span>
+  </div>
+  <div class="s-body" id="dadosBody"></div>
+  <div class="s-footer">
+    <button class="btn-whats-pedido" onclick="fazerPedido()">💬 Fazer Pedido no WhatsApp</button>
+  </div>
+</div>
+
+<!-- ══ TOAST ══════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── NAVEGAÇÃO ──────────────────── */
+const stack = ['home'];
+
+function sc(id) { return document.getElementById('screen-' + id); }
+
+function goTo(id) {
+  const cur = sc(stack[stack.length - 1]);
+  const nxt = sc(id);
+  cur.style.transition = 'transform .38s cubic-bezier(.4,0,.2,1)';
+  cur.style.transform  = 'translateX(-28%)';
+  nxt.style.transition = 'none';
+  nxt.style.transform  = 'translateX(100%)';
+  nxt.offsetHeight;
+  nxt.style.transition = 'transform .38s cubic-bezier(.4,0,.2,1)';
+  nxt.style.transform  = 'translateX(0)';
+  const sb = nxt.querySelector('.s-body');
+  if (sb) sb.scrollTop = 0;
+  stack.push(id);
+}
+
+function goBack() {
+  if (stack.length <= 1) return;
+  const curId  = stack.pop();
+  const prevId = stack[stack.length - 1];
+  const cur  = sc(curId);
+  const prev = sc(prevId);
+  cur.style.transition  = 'transform .38s cubic-bezier(.4,0,.2,1)';
+  cur.style.transform   = 'translateX(100%)';
+  prev.style.transition = 'none';
+  prev.style.transform  = 'translateX(-28%)';
+  prev.offsetHeight;
+  prev.style.transition = 'transform .38s cubic-bezier(.4,0,.2,1)';
+  prev.style.transform  = 'translateX(0)';
+}
+
+/* ── TIPO ───────────────────────── */
+let tipoEscolhido = null;
+
+function escolherTipo(t) {
+  tipoEscolhido = t;
+  ['local','entrega'].forEach(x => {
+    document.getElementById('tc-' + x).classList.toggle('selected', x === t);
+    document.getElementById('tr-' + x).textContent = x === t ? '✓' : '';
+  });
+  document.getElementById('btn-av-tipo').disabled = false;
+}
+
+function avancarTipo() {
+  if (!tipoEscolhido) return;
+  renderMenu();
+  goTo('cardapio');
+}
+
+/* ── CARDÁPIO DATA ──────────────── */
+const MENU = {
+  classica: [
+    { id:'raiz',    nome:'O Raiz',    desc:'Hambúrguer 110g, alface, tomate, ervilha, milho, ovo, presunto, queijo, bacon e batata palha.', img:'image/pratos_bebidas/1.png' },
+    { id:'gourmet', nome:'O Gourmet', desc:'Hambúrguer 180g, cheddar, cebola caramelizada e bacon.',                                        img:'image/pratos_bebidas/2.png' },
+    { id:'brabo',   nome:'O Brabo',   desc:'2x 180g, cheddar, cebola caramelizada, dobro de bacon e molho da casa.',                        img:'image/pratos_bebidas/7_bruto.png' },
+    { id:'duplo',   nome:'O Duplo',   desc:'2x 110g, alface, tomate, milho, ervilha, dobro de queijo, presunto e bacon.',                   img:'image/pratos_bebidas/6.png' },
+  ],
+  xraiz: [
+    { id:'xboi',     nome:'X-Boi',     desc:'150g, queijo prato, alface, tomate, cebola, mostarda e maionese caseira.',        img:'image/pratos_bebidas/2.png' },
+    { id:'xfrango',  nome:'X-Frango',  desc:'Frango grelhado 130g, alface, tomate, milho, ervilha, queijo, mel e mostarda.',   img:'image/pratos_bebidas/1.png' },
+    { id:'xtatu',    nome:'X-Tatu',    desc:'110g, ovo frito, queijo, presunto, alface, tomate e batata palha generosa.',      img:'image/pratos_bebidas/4_bruto.png' },
+    { id:'xcabra',   nome:'X-Cabra',   desc:'110g, alface, tomate, ervilha, milho, catupiry, bacon e batata palha.',           img:'image/pratos_bebidas/6.png' },
+    { id:'xleitao',  nome:'X-Leitão',  desc:'110g, pernil desfiado, queijo, alface, tomate, cebola caramelizada e vinagrete.', img:'image/pratos_bebidas/7_bruto.png' },
+    { id:'xmarreco', nome:'X-Marreco', desc:'110g duplo achatado, queijo coalho, alface, tomate, ovo e maionese de alho.',     img:'image/pratos_bebidas/1.png' },
+  ],
+  acomp: [
+    { id:'bat_m', nome:'Batata Frita Média',  desc:'Batata frita crocante, tamanho médio.',  img:'image/pratos_bebidas/3.png' },
+    { id:'bat_g', nome:'Batata Frita Grande', desc:'Batata frita crocante, tamanho grande.', img:'image/pratos_bebidas/3.png' },
+  ],
+  bebidas: [
+    { id:'coca',    nome:'Coca-Cola',       icon:'🥤' },
+    { id:'fanta',   nome:'Fanta',           icon:'🧡' },
+    { id:'sprite',  nome:'Sprite',          icon:'💚' },
+    { id:'guarana', nome:'Guaraná',         icon:'🍋' },
+    { id:'suco',    nome:'Suco de Laranja', icon:'🍊' },
+    { id:'agua',    nome:'Água',            icon:'💧' },
+  ]
+};
+
+/* ── CARRINHO ───────────────────── */
+let cart = {};
+
+function addItem(id, nome) {
+  if (cart[id]) cart[id].qty++;
+  else cart[id] = { nome, qty: 1, obs: '' };
+  refreshQty(id);
+  refreshCartBar();
+  const ob = document.getElementById('ob-' + id);
+  if (ob) ob.classList.add('show');
+}
+
+function rmItem(id) {
+  if (!cart[id]) return;
+  cart[id].qty--;
+  if (cart[id].qty <= 0) {
+    delete cart[id];
+    const ob = document.getElementById('ob-' + id);
+    if (ob) ob.classList.remove('show');
+  }
+  refreshQty(id);
+  refreshCartBar();
+}
+
+function setObs(id, v) { if (cart[id]) cart[id].obs = v.trim(); }
+
+function refreshQty(id) {
+  const el = document.getElementById('qn-' + id);
+  if (el) el.textContent = cart[id] ? cart[id].qty : 0;
+}
+
+function refreshCartBar() {
+  const n = Object.values(cart).reduce((s, i) => s + i.qty, 0);
+  document.getElementById('cartTotal').textContent = n;
+  document.getElementById('btn-av-card').disabled = n === 0;
+}
+
+/* ── RENDER MENU ────────────────── */
+function miHtml(item) {
+  const q = cart[item.id] ? cart[item.id].qty : 0;
+  const o = cart[item.id] ? cart[item.id].obs : '';
+  return `
+  <div class="menu-item">
+    <div class="mi-row">
+      <img src="${item.img}" alt="${item.nome}" class="mi-img" loading="lazy">
+      <div class="mi-info">
+        <h4>${item.nome}</h4>
+        <p>${item.desc}</p>
+      </div>
+      <div class="mi-qty">
+        <button class="qb minus" onclick="rmItem('${item.id}')">−</button>
+        <span class="qn" id="qn-${item.id}">${q}</span>
+        <button class="qb plus"  onclick="addItem('${item.id}',\`${item.nome}\`)">+</button>
+      </div>
+    </div>
+    <div class="mi-obs-wrap ${q > 0 ? 'show' : ''}" id="ob-${item.id}">
+      <input class="mi-obs" type="text" placeholder="Observação (ex: sem cebola, bem passado...)"
+             value="${o}" oninput="setObs('${item.id}',this.value)">
+    </div>
+  </div>`;
+}
+
+function bebHtml(item) {
+  const q = cart[item.id] ? cart[item.id].qty : 0;
+  return `
+  <div class="beb-card">
+    <div class="beb-icon">${item.icon}</div>
+    <h4>${item.nome}</h4>
+    <div class="beb-qty">
+      <button class="qb minus" onclick="rmItem('${item.id}')">−</button>
+      <span class="qn" id="qn-${item.id}">${q}</span>
+      <button class="qb plus"  onclick="addItem('${item.id}',\`${item.nome}\`)">+</button>
+    </div>
+  </div>`;
+}
+
+function renderMenu() {
+  document.getElementById('menuBody').innerHTML = `
+    <div id="cat-classica">
+      <div class="cat-label">🔥 Linha Clássica</div>
+      ${MENU.classica.map(miHtml).join('')}
+    </div>
+    <div id="cat-xraiz">
+      <div class="cat-label">🐄 Linha X-Raiz</div>
+      ${MENU.xraiz.map(miHtml).join('')}
+    </div>
+    <div id="cat-acomp">
+      <div class="cat-label">🍟 Acompanhamentos</div>
+      ${MENU.acomp.map(miHtml).join('')}
+    </div>
+    <div id="cat-bebidas">
+      <div class="cat-label">🥤 Bebidas</div>
+      <div class="beb-grid">${MENU.bebidas.map(bebHtml).join('')}</div>
+    </div>`;
+  refreshCartBar();
+}
+
+function irCat(id, btn) {
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('on'));
+  btn.classList.add('on');
+  const el   = document.getElementById('cat-' + id);
+  const body = document.getElementById('menuBody');
+  if (el && body) body.scrollTo({ top: el.offsetTop - 4, behavior: 'smooth' });
+}
+
+/* ── AVANÇAR CARDÁPIO ───────────── */
+function avancarCardapio() {
+  if (!Object.keys(cart).length) return;
+  renderDados();
+  goTo('dados');
+}
+
+/* ── RENDER DADOS ───────────────── */
+function renderDados() {
+  const isLocal   = tipoEscolhido === 'local';
+  const tipoLabel = isLocal ? 'Retirar no Local' : 'Delivery';
+  const tipoIcon  = isLocal ? '🏠' : '🛵';
+  const tipoSub   = isLocal ? 'Sem taxa de entrega' : 'Porecatu / PR';
+  const items     = Object.entries(cart);
+
+  const resumo = items.map(([, i]) => `
+    <div class="ri"><span>${i.nome}</span><span class="rq">${i.qty}x</span></div>
+    ${i.obs ? `<div class="ri-obs">📝 ${i.obs}</div>` : ''}`).join('');
+
+  const endFields = !isLocal ? `
+    <input class="f-input" id="fEnd"    type="text" placeholder="Endereço completo *" autocomplete="street-address">
+    <input class="f-input" id="fBairro" type="text" placeholder="Bairro / Referência (opcional)">` : '';
+
+  document.getElementById('dadosBody').innerHTML = `
+    <div class="tipo-confirm">
+      <div class="tc-icon">${tipoIcon}</div>
+      <div class="tc-text">
+        <h4>${tipoLabel}</h4>
+        <p>${tipoSub}</p>
+      </div>
+      <div class="tc-radio">✓</div>
+    </div>
+    <div class="resumo-box">
+      <h4>Resumo do Pedido</h4>
+      ${resumo}
+    </div>
+    <div class="form-blk">
+      <h4>Seus Dados</h4>
+      <input class="f-input" id="fNome" type="text" placeholder="Nome *"   autocomplete="name">
+      <input class="f-input" id="fTel"  type="tel"  placeholder="Celular *" autocomplete="tel">
+      ${endFields}
+      <textarea class="f-input" id="fObs" rows="2" placeholder="Observação geral (opcional)" style="resize:none;margin-top:.8rem"></textarea>
+    </div>`;
+}
+
+/* ── FAZER PEDIDO ───────────────── */
+function fazerPedido() {
+  const nome   = document.getElementById('fNome')?.value.trim()   || '';
+  const tel    = document.getElementById('fTel')?.value.trim()    || '';
+  const end    = document.getElementById('fEnd')?.value.trim()    || '';
+  const bairro = document.getElementById('fBairro')?.value.trim() || '';
+  const obs    = document.getElementById('fObs')?.value.trim()    || '';
+
+  if (!nome) { showToast('⚠️ Informe seu nome!');     document.getElementById('fNome').focus(); return; }
+  if (!tel)  { showToast('⚠️ Informe seu telefone!'); document.getElementById('fTel').focus();  return; }
+  if (tipoEscolhido === 'entrega' && !end) {
+    showToast('⚠️ Informe o endereço de entrega!');
+    document.getElementById('fEnd').focus(); return;
+  }
+
+  const tipoLabel = tipoEscolhido === 'local' ? 'Retirar no Local' : 'Delivery';
+  const linhas = Object.values(cart).map(i => {
+    const o = i.obs ? `\n   📝 ${i.obs}` : '';
+    return `✅ ${i.nome} — ${i.qty}x${o}`;
+  }).join('\n');
+
+  let endLinha = '';
+  if (tipoEscolhido === 'entrega') {
+    endLinha = `\n🏠 Endereço: ${end}`;
+    if (bairro) endLinha += ` — ${bairro}`;
+  }
+
+  const obsLinha = obs ? `\n📝 Obs. geral: ${obs}` : '';
+  const msg = `🍔 *Pedido - Kikão Lanches*\n📦 ${tipoLabel}\n\n${linhas}\n\n👤 Nome: ${nome}\n📞 Tel: ${tel}${endLinha}${obsLinha}\n\n📍 Porecatu/PR\n📲 Aguardando confirmação!`;
+
+  window.open(`https://wa.me/5543998624185?text=${encodeURIComponent(msg)}`, '_blank');
+  showToast('✅ Abrindo WhatsApp com seu pedido!');
+
+  setTimeout(() => {
+    cart = {}; tipoEscolhido = null;
+    while (stack.length > 1) stack.pop();
+    ['sobre','tipo','cardapio','dados'].forEach(id => {
+      const el = sc(id);
+      el.style.transition = 'none';
+      el.style.transform  = 'translateX(100%)';
+    });
+    sc('home').style.transition = 'none';
+    sc('home').style.transform  = 'translateX(0)';
+  }, 1800);
+}
+
+/* ── TOAST ──────────────────────── */
+let _tt;
+function showToast(msg, dur = 3200) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_tt);
+  _tt = setTimeout(() => el.classList.remove('show'), dur);
+}
+</script>
+</body>
+</html>

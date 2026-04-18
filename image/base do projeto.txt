@@ -1,0 +1,46 @@
+rojeto Site de Lanchonete
+O Raiz: hambúrguer de 110g, alface, tomate, ervilha, milho, ovo, presunto, queijo, bacon e batata palha.
+
+O Gourmet: hambúrguer de 180g, cheddar, cebola caramelizada e bacon.
+
+O Brabo: 2 hambúrgueres de 180g, cheddar, cebola caramelizada, dobro de bacon e molho da casa.
+
+O Duplo: 2 hambúrgueres de 110g, alface, tomate, milho, ervilha, dobro de queijo, presunto e bacon.
+
+Batata Frita: Média ou Grande.
+
+Bebidas: Coca-Cola, Fanta, Sprite, Guaraná, Suco de Laranja e Água.
+
+Estrutura do Site
+
+ele deve seguir como base o site https://caoveio.com.br/
+
+sem a parte especifica de franqueado, o foco é no cardapio e nos pedidos. Que são encaminhados para o whatsapp da empresa 43998624185.
+
+a lanchonete fica em porecatu/pr e tem o nome de Kikão Lanches.
+
+A cidade é do interior e bem clima de cidade de interior, então o site tem que ser simples e usando as cores.
+
+F5B915
+1A1A1A
+FFFFFF - tente usar o hex da cor gelo
+
+a logo está Projeto3\image\logo - precisa tirar o fundo da imagem
+imagem dos pratos Projeto3\image\pratos_bebidas
+cardapio Projeto3\image\cardapio
+fachada da loja Projeto3\image\banner
+
+tente deixar fácil de inteagir e com animações quando descer a página
+
+Projeto Site de Lanchonete
+O Raiz: hambúrguer de 110g, alface, tomate, ervilha, milho, ovo, presunto, queijo, bacon e batata palha.
+
+O Gourmet: hambúrguer de 180g, cheddar, cebola caramelizada e bacon.
+
+O Brabo: 2 hambúrgueres de 180g, cheddar, cebola caramelizada, dobro de bacon e molho da casa.
+
+O Duplo: 2 hambúrgueres de 110g, alface, tomate, milho, ervilha, dobro de queijo, presunto e bacon.
+
+Batata Frita: Média ou Grande.
+
+Bebidas: Coca-Cola, Fanta, Sprite, Guaraná, Suco de Laranja e Água.
