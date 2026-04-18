@@ -9,3 +9,6 @@ desktop.ini
 # Editor
 .vscode/
 *.log
+.next_version.txt
+
+.vercel
